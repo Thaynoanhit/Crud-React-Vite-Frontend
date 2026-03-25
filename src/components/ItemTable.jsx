@@ -1,6 +1,32 @@
-import { formatCurrency } from '../utils/currency'
+import { formatCurrency } from "../utils/currency";
 
 export function ItemTable({ itens, total, onRemoverItem }) {
+  const getLinhaInfo = (nomeProduto) => {
+    if (!String(nomeProduto).includes("|")) {
+      return {
+        linha: "Sem linha",
+        nomeExibicao: nomeProduto,
+        linhaClasse: "outros",
+      };
+    }
+
+    const [linhaRaw, nomeRaw] = String(nomeProduto)
+      .split("|")
+      .map((parte) => parte.trim());
+
+    const linhaClasseMap = {
+      Entrada: "entrada",
+      Intermediario: "intermediario",
+      "Alto Desempenho": "alto-desempenho",
+    };
+
+    return {
+      linha: linhaRaw,
+      nomeExibicao: nomeRaw,
+      linhaClasse: linhaClasseMap[linhaRaw] ?? "outros",
+    };
+  };
+
   return (
     <div className="itens-wrapper">
       <table>
@@ -21,23 +47,36 @@ export function ItemTable({ itens, total, onRemoverItem }) {
               </td>
             </tr>
           ) : (
-            itens.map((item, index) => (
-              <tr key={`${item.produto_id}-${index}`}>
-                <td>{item.produto}</td>
-                <td>{item.quantidade}</td>
-                <td>{formatCurrency(item.valor)}</td>
-                <td>{formatCurrency(item.subtotal)}</td>
-                <td>
-                  <button
-                    type="button"
-                    className="btn btn-danger"
-                    onClick={() => onRemoverItem(index)}
-                  >
-                    Remover
-                  </button>
-                </td>
-              </tr>
-            ))
+            itens.map((item, index) => {
+              const linhaInfo = getLinhaInfo(item.produto);
+
+              return (
+                <tr key={`${item.produto_id}-${index}`}>
+                  <td>
+                    <span className="item-produto-info">
+                      <span
+                        className={`kit-preview-linha kit-preview-linha-${linhaInfo.linhaClasse}`}
+                      >
+                        {linhaInfo.linha}
+                      </span>
+                      <span>{linhaInfo.nomeExibicao}</span>
+                    </span>
+                  </td>
+                  <td>{item.quantidade}</td>
+                  <td>{formatCurrency(item.valor)}</td>
+                  <td>{formatCurrency(item.subtotal)}</td>
+                  <td>
+                    <button
+                      type="button"
+                      className="btn btn-danger"
+                      onClick={() => onRemoverItem(index)}
+                    >
+                      Remover
+                    </button>
+                  </td>
+                </tr>
+              );
+            })
           )}
         </tbody>
         <tfoot>
@@ -49,5 +88,5 @@ export function ItemTable({ itens, total, onRemoverItem }) {
         </tfoot>
       </table>
     </div>
-  )
+  );
 }

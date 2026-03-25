@@ -56,11 +56,11 @@ export function OrcamentosList({
       )}
 
       <div className="pagination-bar">
-        <div className="pagination-info">
-          <span>
-            Pagina {totalPaginas === 0 ? 0 : paginaAtual} de {totalPaginas} |
-            Total: {totalItens}
-          </span>
+        <p className="pagination-status">
+          Pagina {totalPaginas === 0 ? 0 : paginaAtual} de {totalPaginas} |
+          Total: {totalItens}
+        </p>
+        <div className="pagination-controls">
           <label className="pagination-jump-control" htmlFor="ir-para-pagina">
             Ir para pagina
             <select
@@ -80,24 +80,24 @@ export function OrcamentosList({
               )}
             </select>
           </label>
-        </div>
-        <div className="pagination-actions">
-          <button
-            type="button"
-            className="btn"
-            onClick={onPaginaAnterior}
-            disabled={loadingOrcamentos || !temPaginaAnterior}
-          >
-            Anterior
-          </button>
-          <button
-            type="button"
-            className="btn"
-            onClick={onProximaPagina}
-            disabled={loadingOrcamentos || !temProximaPagina}
-          >
-            Proxima
-          </button>
+          <div className="pagination-actions">
+            <button
+              type="button"
+              className="btn"
+              onClick={onPaginaAnterior}
+              disabled={loadingOrcamentos || !temPaginaAnterior}
+            >
+              Anterior
+            </button>
+            <button
+              type="button"
+              className="btn"
+              onClick={onProximaPagina}
+              disabled={loadingOrcamentos || !temProximaPagina}
+            >
+              Proxima
+            </button>
+          </div>
         </div>
       </div>
     </section>

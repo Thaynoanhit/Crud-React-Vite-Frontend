@@ -15,12 +15,62 @@ import { calculateTotal } from "../utils/orcamento";
 
 const initialDate = () => getTodayBrDate();
 const DEFAULT_PER_PAGE = 10;
+const LINE_ORDER = {
+  Entrada: 1,
+  Intermediario: 2,
+  "Alto Desempenho": 3,
+};
+
+const KIT_CATALOG = [
+  {
+    id: "kit-escritorio",
+    nome: "Kit Escritorio",
+    itens: [
+      { match: "Mouse USB", quantidade: 1 },
+      { match: "Teclado Membrana", quantidade: 1 },
+      { match: "Webcam Full HD", quantidade: 1 },
+    ],
+  },
+  {
+    id: "kit-gamer",
+    nome: "Kit Gamer",
+    itens: [
+      { match: "Mouse Gamer RGB", quantidade: 1 },
+      { match: "Teclado Mecanico RGB", quantidade: 1 },
+      { match: "Headset Gamer 7.1", quantidade: 1 },
+      { match: "Monitor 24 144Hz", quantidade: 1 },
+    ],
+  },
+  {
+    id: "kit-workstation",
+    nome: "Kit Workstation",
+    itens: [
+      { match: "Processador Ryzen 5 5600", quantidade: 1 },
+      { match: "Placa Mae B550", quantidade: 1 },
+      { match: "Memoria RAM 32GB DDR5", quantidade: 1 },
+      { match: "SSD NVMe 2TB", quantidade: 1 },
+      { match: "Monitor 27 QHD 165Hz", quantidade: 1 },
+    ],
+  },
+];
+
+const normalizeText = (value) =>
+  String(value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+
+const getProductLine = (nome) => {
+  if (!nome || !nome.includes("|")) return "";
+  return nome.split("|")[0].trim();
+};
 
 export const useOrcamentoPage = () => {
   const [nomeCliente, setNomeCliente] = useState("");
   const [data, setData] = useState(initialDate());
   const [produtoSelecionado, setProdutoSelecionado] = useState("");
   const [quantidade, setQuantidade] = useState(1);
+  const [kitSelecionado, setKitSelecionado] = useState("");
 
   const [produtos, setProdutos] = useState([]);
   const [itens, setItens] = useState([]);
@@ -37,6 +87,66 @@ export const useOrcamentoPage = () => {
   const [salvandoOrcamento, setSalvandoOrcamento] = useState(false);
   const [erro, setErro] = useState("");
   const [sucesso, setSucesso] = useState("");
+
+  const produtosOrdenados = useMemo(() => {
+    return [...produtos].sort((a, b) => {
+      const lineA = getProductLine(a.nome);
+      const lineB = getProductLine(b.nome);
+      const rankA = LINE_ORDER[lineA] ?? Number.MAX_SAFE_INTEGER;
+      const rankB = LINE_ORDER[lineB] ?? Number.MAX_SAFE_INTEGER;
+
+      if (rankA !== rankB) {
+        return rankA - rankB;
+      }
+
+      const priceA = toNumber(a.valor);
+      const priceB = toNumber(b.valor);
+      if (priceA !== priceB) {
+        return priceA - priceB;
+      }
+
+      return String(a.nome).localeCompare(String(b.nome), "pt-BR");
+    });
+  }, [produtos]);
+
+  const kitsDisponiveis = useMemo(() => {
+    return KIT_CATALOG.map((kit) => {
+      const itensResolvidos = kit.itens.map((itemKit) => {
+        const produto = produtosOrdenados.find((produtoAtual) =>
+          normalizeText(produtoAtual.nome).includes(
+            normalizeText(itemKit.match),
+          ),
+        );
+
+        return {
+          ...itemKit,
+          produto,
+        };
+      });
+
+      const faltantes = itensResolvidos
+        .filter((item) => !item.produto)
+        .map((item) => item.match);
+
+      return {
+        id: kit.id,
+        nome: kit.nome,
+        disponivel: faltantes.length === 0,
+        faltantes,
+        itens: itensResolvidos
+          .filter((item) => item.produto)
+          .map((item) => ({
+            produto: item.produto,
+            quantidade: item.quantidade,
+          })),
+      };
+    });
+  }, [produtosOrdenados]);
+
+  const kitsProntos = useMemo(
+    () => kitsDisponiveis.filter((kit) => kit.disponivel),
+    [kitsDisponiveis],
+  );
 
   const total = useMemo(() => calculateTotal(itens), [itens]);
 
@@ -120,7 +230,7 @@ export const useOrcamentoPage = () => {
 
     const produtoId = Number(produtoSelecionado);
     const quantidadeNumerica = Number(quantidade);
-    const produto = produtos.find((item) => item.id === produtoId);
+    const produto = produtosOrdenados.find((item) => item.id === produtoId);
 
     if (!produto) {
       setErro("Selecione um produto valido antes de adicionar");
@@ -147,6 +257,61 @@ export const useOrcamentoPage = () => {
     setQuantidade(1);
   };
 
+  const adicionarKit = () => {
+    setErro("");
+    setSucesso("");
+
+    if (!kitSelecionado) {
+      setErro("Selecione um kit antes de adicionar");
+      return;
+    }
+
+    const kit = kitsDisponiveis.find((item) => item.id === kitSelecionado);
+
+    if (!kit || !kit.disponivel) {
+      const faltantes =
+        kit?.faltantes?.join(", ") || "produtos nao encontrados";
+      setErro(`Nao foi possivel montar o kit. Faltando: ${faltantes}`);
+      return;
+    }
+
+    setItens((state) => {
+      const nextState = [...state];
+
+      for (const itemKit of kit.itens) {
+        const valor = toNumber(itemKit.produto.valor);
+        const indexExistente = nextState.findIndex(
+          (itemAtual) => itemAtual.produto_id === itemKit.produto.id,
+        );
+
+        if (indexExistente === -1) {
+          nextState.push({
+            produto_id: itemKit.produto.id,
+            produto: itemKit.produto.nome,
+            valor,
+            quantidade: itemKit.quantidade,
+            subtotal: itemKit.quantidade * valor,
+          });
+          continue;
+        }
+
+        const itemExistente = nextState[indexExistente];
+        const novaQuantidade = itemExistente.quantidade + itemKit.quantidade;
+
+        nextState[indexExistente] = {
+          ...itemExistente,
+          quantidade: novaQuantidade,
+          subtotal: novaQuantidade * itemExistente.valor,
+        };
+      }
+
+      return nextState;
+    });
+
+    setKitSelecionado("");
+    setSucesso(`${kit.nome} adicionado com sucesso`);
+  };
+
   const removerItem = (index) => {
     setItens((state) => state.filter((_, itemIndex) => itemIndex !== index));
   };
@@ -157,6 +322,7 @@ export const useOrcamentoPage = () => {
     setItens([]);
     setProdutoSelecionado("");
     setQuantidade(1);
+    setKitSelecionado("");
   };
 
   const atualizarData = (value) => {
@@ -220,7 +386,10 @@ export const useOrcamentoPage = () => {
     setProdutoSelecionado,
     quantidade,
     setQuantidade,
-    produtos,
+    kitSelecionado,
+    setKitSelecionado,
+    produtos: produtosOrdenados,
+    kitsProntos,
     itens,
     total,
     orcamentos,
@@ -231,6 +400,7 @@ export const useOrcamentoPage = () => {
     erro,
     sucesso,
     adicionarItem,
+    adicionarKit,
     removerItem,
     salvarOrcamento,
     carregarOrcamentos,

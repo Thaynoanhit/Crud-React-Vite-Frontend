@@ -1,22 +1,60 @@
-import { formatCurrency } from '../utils/currency'
-import { ItemTable } from './ItemTable'
+import { formatCurrency } from "../utils/currency";
+import { ItemTable } from "./ItemTable";
 
 export function OrcamentoForm({
   formData,
   produtos,
+  kitsProntos,
   itens,
   total,
   loadingProdutos,
   salvandoOrcamento,
   onFieldChange,
+  onSelecionarKit,
   onAdicionarItem,
+  onAdicionarKit,
   onRemoverItem,
   onSubmit,
 }) {
   const handleSubmit = async (event) => {
-    event.preventDefault()
-    await onSubmit()
-  }
+    event.preventDefault();
+    await onSubmit();
+  };
+
+  const kitSelecionadoDetalhes = kitsProntos.find(
+    (kit) => kit.id === formData.kitSelecionado,
+  );
+
+  const totalEstimadoKit = (kitSelecionadoDetalhes?.itens ?? []).reduce(
+    (acc, item) => acc + Number(item.produto.valor) * Number(item.quantidade),
+    0,
+  );
+
+  const getLinhaInfo = (nomeProduto) => {
+    if (!String(nomeProduto).includes("|")) {
+      return {
+        linha: "Sem linha",
+        nomeExibicao: nomeProduto,
+        linhaClasse: "outros",
+      };
+    }
+
+    const [linhaRaw, nomeRaw] = String(nomeProduto)
+      .split("|")
+      .map((parte) => parte.trim());
+
+    const linhaClasseMap = {
+      Entrada: "entrada",
+      Intermediario: "intermediario",
+      "Alto Desempenho": "alto-desempenho",
+    };
+
+    return {
+      linha: linhaRaw,
+      nomeExibicao: nomeRaw,
+      linhaClasse: linhaClasseMap[linhaRaw] ?? "outros",
+    };
+  };
 
   return (
     <section className="panel">
@@ -27,7 +65,9 @@ export function OrcamentoForm({
           <input
             type="text"
             value={formData.nomeCliente}
-            onChange={(event) => onFieldChange('nomeCliente', event.target.value)}
+            onChange={(event) =>
+              onFieldChange("nomeCliente", event.target.value)
+            }
             placeholder="Ex.: Empresa XPTO"
           />
         </label>
@@ -37,7 +77,7 @@ export function OrcamentoForm({
           <input
             type="text"
             value={formData.data}
-            onChange={(event) => onFieldChange('data', event.target.value)}
+            onChange={(event) => onFieldChange("data", event.target.value)}
             placeholder="DD/MM/AAAA"
             inputMode="numeric"
             maxLength={10}
@@ -49,7 +89,9 @@ export function OrcamentoForm({
             Produto
             <select
               value={formData.produtoSelecionado}
-              onChange={(event) => onFieldChange('produtoSelecionado', event.target.value)}
+              onChange={(event) =>
+                onFieldChange("produtoSelecionado", event.target.value)
+              }
               disabled={loadingProdutos}
             >
               <option value="">Selecione...</option>
@@ -67,7 +109,9 @@ export function OrcamentoForm({
               type="number"
               min="1"
               value={formData.quantidade}
-              onChange={(event) => onFieldChange('quantidade', event.target.value)}
+              onChange={(event) =>
+                onFieldChange("quantidade", event.target.value)
+              }
             />
           </label>
 
@@ -76,12 +120,76 @@ export function OrcamentoForm({
           </button>
         </div>
 
+        <div className="kit-builder">
+          <label>
+            Kit pronto
+            <select
+              value={formData.kitSelecionado}
+              onChange={(event) => onSelecionarKit(event.target.value)}
+              disabled={loadingProdutos || kitsProntos.length === 0}
+            >
+              <option value="">Selecione um kit...</option>
+              {kitsProntos.map((kit) => (
+                <option key={kit.id} value={kit.id}>
+                  {kit.nome} ({kit.itens.length} itens)
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <button
+            type="button"
+            onClick={onAdicionarKit}
+            className="btn"
+            disabled={loadingProdutos || kitsProntos.length === 0}
+          >
+            Adicionar kit
+          </button>
+        </div>
+
+        {kitSelecionadoDetalhes ? (
+          <div className="kit-preview" aria-live="polite">
+            <strong>Resumo do {kitSelecionadoDetalhes.nome}</strong>
+            <ul className="kit-preview-lista">
+              {kitSelecionadoDetalhes.itens.map((item) => {
+                const subtotal =
+                  Number(item.produto.valor) * Number(item.quantidade);
+                const linhaInfo = getLinhaInfo(item.produto.nome);
+
+                return (
+                  <li key={item.produto.id}>
+                    <span className="kit-preview-item-info">
+                      <span
+                        className={`kit-preview-linha kit-preview-linha-${linhaInfo.linhaClasse}`}
+                      >
+                        {linhaInfo.linha}
+                      </span>
+                      <span>
+                        {item.quantidade}x {linhaInfo.nomeExibicao}
+                      </span>
+                    </span>
+                    <span>{formatCurrency(subtotal)}</span>
+                  </li>
+                );
+              })}
+            </ul>
+            <p className="kit-preview-total">
+              Total estimado do kit:{" "}
+              <strong>{formatCurrency(totalEstimadoKit)}</strong>
+            </p>
+          </div>
+        ) : null}
+
         <ItemTable itens={itens} total={total} onRemoverItem={onRemoverItem} />
 
-        <button type="submit" className="btn btn-primary" disabled={salvandoOrcamento}>
-          {salvandoOrcamento ? 'Salvando...' : 'Salvar orcamento'}
+        <button
+          type="submit"
+          className="btn btn-primary"
+          disabled={salvandoOrcamento}
+        >
+          {salvandoOrcamento ? "Salvando..." : "Salvar orcamento"}
         </button>
       </form>
     </section>
-  )
+  );
 }

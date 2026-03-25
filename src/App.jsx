@@ -15,7 +15,10 @@ function App() {
     setProdutoSelecionado,
     quantidade,
     setQuantidade,
+    kitSelecionado,
+    setKitSelecionado,
     produtos,
+    kitsProntos,
     itens,
     total,
     orcamentos,
@@ -26,6 +29,7 @@ function App() {
     erro,
     sucesso,
     adicionarItem,
+    adicionarKit,
     removerItem,
     salvarOrcamento,
     carregarOrcamentos,
@@ -82,14 +86,23 @@ function App() {
 
       <section className="dashboard-grid">
         <OrcamentoForm
-          formData={{ nomeCliente, data, produtoSelecionado, quantidade }}
+          formData={{
+            nomeCliente,
+            data,
+            produtoSelecionado,
+            quantidade,
+            kitSelecionado,
+          }}
           produtos={produtos}
+          kitsProntos={kitsProntos}
           itens={itens}
           total={total}
           loadingProdutos={loadingProdutos}
           salvandoOrcamento={salvandoOrcamento}
           onFieldChange={handleFieldChange}
+          onSelecionarKit={setKitSelecionado}
           onAdicionarItem={adicionarItem}
+          onAdicionarKit={adicionarKit}
           onRemoverItem={removerItem}
           onSubmit={salvarOrcamento}
         />
