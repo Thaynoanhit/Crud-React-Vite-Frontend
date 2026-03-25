@@ -71,6 +71,9 @@ export const useOrcamentoPage = () => {
   const [produtoSelecionado, setProdutoSelecionado] = useState("");
   const [quantidade, setQuantidade] = useState(1);
   const [kitSelecionado, setKitSelecionado] = useState("");
+  const [nomeProdutoExtra, setNomeProdutoExtra] = useState("");
+  const [valorProdutoExtra, setValorProdutoExtra] = useState("");
+  const [produtoExtraEmEdicaoId, setProdutoExtraEmEdicaoId] = useState(null);
 
   const [produtos, setProdutos] = useState([]);
   const [itens, setItens] = useState([]);
@@ -316,6 +319,89 @@ export const useOrcamentoPage = () => {
     setItens((state) => state.filter((_, itemIndex) => itemIndex !== index));
   };
 
+  const cancelarEdicaoProdutoExtra = () => {
+    setProdutoExtraEmEdicaoId(null);
+    setNomeProdutoExtra("");
+    setValorProdutoExtra("");
+  };
+
+  const iniciarEdicaoProdutoExtra = (produto) => {
+    setProdutoExtraEmEdicaoId(produto.id);
+    setNomeProdutoExtra(String(produto.nome ?? ""));
+    setValorProdutoExtra(String(toNumber(produto.valor)));
+  };
+
+  const salvarProdutoExtra = () => {
+    setErro("");
+    setSucesso("");
+
+    const nomeNormalizado = nomeProdutoExtra.trim();
+    const valorNormalizado = Number(
+      String(valorProdutoExtra).replace(".", "").replace(",", "."),
+    );
+
+    if (!nomeNormalizado) {
+      setErro("Informe o nome do produto extra");
+      return false;
+    }
+
+    if (Number.isNaN(valorNormalizado) || valorNormalizado <= 0) {
+      setErro("Informe um valor valido para o produto extra");
+      return false;
+    }
+
+    if (produtoExtraEmEdicaoId === null) {
+      const novoId =
+        produtos.reduce(
+          (maxId, produto) => Math.max(maxId, Number(produto.id)),
+          0,
+        ) + 1;
+
+      setProdutos((state) => [
+        ...state,
+        {
+          id: novoId,
+          nome: nomeNormalizado,
+          valor: valorNormalizado,
+        },
+      ]);
+
+      setSucesso("Produto extra adicionado na sessao atual");
+      cancelarEdicaoProdutoExtra();
+      return true;
+    }
+
+    setProdutos((state) =>
+      state.map((produto) =>
+        produto.id === produtoExtraEmEdicaoId
+          ? {
+              ...produto,
+              nome: nomeNormalizado,
+              valor: valorNormalizado,
+            }
+          : produto,
+      ),
+    );
+
+    // Mantem o rascunho consistente quando um produto usado nos itens e alterado.
+    setItens((state) =>
+      state.map((item) =>
+        item.produto_id === produtoExtraEmEdicaoId
+          ? {
+              ...item,
+              produto: nomeNormalizado,
+              valor: valorNormalizado,
+              subtotal: valorNormalizado * item.quantidade,
+            }
+          : item,
+      ),
+    );
+
+    setSucesso("Produto extra atualizado na sessao atual");
+    cancelarEdicaoProdutoExtra();
+    return true;
+  };
+
   const limparFormulario = () => {
     setNomeCliente("");
     setData(initialDate());
@@ -405,5 +491,13 @@ export const useOrcamentoPage = () => {
     salvarOrcamento,
     carregarOrcamentos,
     selecionarPagina,
+    nomeProdutoExtra,
+    setNomeProdutoExtra,
+    valorProdutoExtra,
+    setValorProdutoExtra,
+    produtoExtraEmEdicaoId,
+    iniciarEdicaoProdutoExtra,
+    cancelarEdicaoProdutoExtra,
+    salvarProdutoExtra,
   };
 };

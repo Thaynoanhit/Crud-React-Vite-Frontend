@@ -1,0 +1,12 @@
+node_modules
+dist
+.git
+.gitignore
+README.md
+setup.sh
+Dockerfile
+docker-compose.yml
+Teste Pratico Desenvolvimento.pdf
+*.log
+.env
+.env.*

@@ -3,6 +3,7 @@ import { FeedbackMessage } from "./components/FeedbackMessage";
 import { OrcamentoForm } from "./components/OrcamentoForm";
 import { OrcamentosList } from "./components/OrcamentosList";
 import { PageHeader } from "./components/PageHeader";
+import { ProdutosManager } from "./components/ProdutosManager";
 import { useOrcamentoPage } from "./hooks/useOrcamentoPage";
 
 function App() {
@@ -34,6 +35,14 @@ function App() {
     salvarOrcamento,
     carregarOrcamentos,
     selecionarPagina,
+    nomeProdutoExtra,
+    setNomeProdutoExtra,
+    valorProdutoExtra,
+    setValorProdutoExtra,
+    produtoExtraEmEdicaoId,
+    iniciarEdicaoProdutoExtra,
+    cancelarEdicaoProdutoExtra,
+    salvarProdutoExtra,
   } = useOrcamentoPage();
 
   const irParaPaginaAnterior = () => {
@@ -106,15 +115,30 @@ function App() {
           onRemoverItem={removerItem}
           onSubmit={salvarOrcamento}
         />
-        <OrcamentosList
-          orcamentos={orcamentos}
-          loadingOrcamentos={loadingOrcamentos}
-          onAtualizar={carregarOrcamentos}
-          paginacao={paginacao}
-          onPaginaAnterior={irParaPaginaAnterior}
-          onProximaPagina={irParaProximaPagina}
-          onSelecionarPagina={selecionarPagina}
-        />
+
+        <div className="side-stack">
+          <ProdutosManager
+            produtos={produtos}
+            nomeProduto={nomeProdutoExtra}
+            valorProduto={valorProdutoExtra}
+            produtoEmEdicao={produtoExtraEmEdicaoId !== null}
+            onNomeChange={setNomeProdutoExtra}
+            onValorChange={setValorProdutoExtra}
+            onSalvarProduto={salvarProdutoExtra}
+            onEditarProduto={iniciarEdicaoProdutoExtra}
+            onCancelarEdicao={cancelarEdicaoProdutoExtra}
+          />
+
+          <OrcamentosList
+            orcamentos={orcamentos}
+            loadingOrcamentos={loadingOrcamentos}
+            onAtualizar={carregarOrcamentos}
+            paginacao={paginacao}
+            onPaginaAnterior={irParaPaginaAnterior}
+            onProximaPagina={irParaProximaPagina}
+            onSelecionarPagina={selecionarPagina}
+          />
+        </div>
       </section>
     </main>
   );

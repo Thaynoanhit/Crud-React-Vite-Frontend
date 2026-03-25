@@ -61,17 +61,23 @@
   gap: 16px;
 }
 
+.side-stack {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
+
 .panel {
   border: 1px solid var(--border);
   border-radius: 16px;
-  padding: 18px;
+  padding: 14px;
   background-color: var(--bg);
   box-shadow: var(--shadow);
 }
 
 .panel h2 {
-  margin: 0 0 14px;
-  font-size: 21px;
+  margin: 0 0 10px;
+  font-size: 20px;
 }
 
 .panel-header {
@@ -311,15 +317,58 @@ tfoot td {
   margin: 0;
   padding-left: 0;
   display: grid;
-  gap: 10px;
+  gap: 8px;
   list-style: none;
+  max-height: 300px;
+  overflow: auto;
 }
 
 .orcamentos-lista li {
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 10px 12px;
+  border-radius: 8px;
+  padding: 8px 10px;
   background: var(--social-bg);
+  font-size: 13px;
+}
+
+.produtos-extra-hint {
+  margin: 0 0 8px;
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.produto-extra-form {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.produto-extra-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.produtos-extra-lista {
+  list-style: none;
+  margin: 0;
+  padding-left: 0;
+  display: grid;
+  gap: 6px;
+  max-height: 140px;
+  overflow: auto;
+}
+
+.produtos-extra-lista li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 13px;
 }
 
 .empty-state {
@@ -334,13 +383,13 @@ tfoot td {
 }
 
 .pagination-bar {
-  margin-top: 14px;
-  padding-top: 12px;
+  margin-top: 10px;
+  padding-top: 10px;
   border-top: 1px solid var(--border);
   display: grid;
-  gap: 10px;
+  gap: 8px;
   color: var(--text);
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .pagination-status {
