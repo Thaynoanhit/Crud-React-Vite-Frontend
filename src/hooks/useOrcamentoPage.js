@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import {
+  atualizarOrcamento,
   criarOrcamento,
+  excluirOrcamento,
   listarOrcamentos,
   listarProdutos,
 } from "../services/orcamentoService";
@@ -9,6 +11,7 @@ import {
   brToApiDate,
   getTodayBrDate,
   isValidBrDate,
+  isoToBrDate,
   normalizeBrDateInput,
 } from "../utils/date";
 import { calculateTotal } from "../utils/orcamento";
@@ -74,6 +77,7 @@ export const useOrcamentoPage = () => {
   const [nomeProdutoExtra, setNomeProdutoExtra] = useState("");
   const [valorProdutoExtra, setValorProdutoExtra] = useState("");
   const [produtoExtraEmEdicaoId, setProdutoExtraEmEdicaoId] = useState(null);
+  const [orcamentoEmEdicaoId, setOrcamentoEmEdicaoId] = useState(null);
 
   const [produtos, setProdutos] = useState([]);
   const [itens, setItens] = useState([]);
@@ -245,6 +249,17 @@ export const useOrcamentoPage = () => {
       return;
     }
 
+    const itemDuplicado = itens.some(
+      (item) =>
+        Number(item.produto_id) === produto.id &&
+        toNumber(item.valor) === toNumber(produto.valor),
+    );
+
+    if (itemDuplicado) {
+      setErro("Este item com o mesmo valor ja foi adicionado ao rascunho");
+      return;
+    }
+
     const subtotal = quantidadeNumerica * toNumber(produto.valor);
     setItens((state) => [
       ...state,
@@ -350,6 +365,23 @@ export const useOrcamentoPage = () => {
       return false;
     }
 
+    const produtoDuplicado = produtos.some((produto) => {
+      const isMesmoNome =
+        normalizeText(produto.nome) === normalizeText(nomeNormalizado);
+      const isMesmoValor =
+        Math.abs(toNumber(produto.valor) - valorNormalizado) < 0.000001;
+      const isMesmoRegistro =
+        produtoExtraEmEdicaoId !== null &&
+        Number(produto.id) === Number(produtoExtraEmEdicaoId);
+
+      return isMesmoNome && isMesmoValor && !isMesmoRegistro;
+    });
+
+    if (produtoDuplicado) {
+      setErro("Ja existe um produto com o mesmo nome e valor");
+      return false;
+    }
+
     if (produtoExtraEmEdicaoId === null) {
       const novoId =
         produtos.reduce(
@@ -402,6 +434,107 @@ export const useOrcamentoPage = () => {
     return true;
   };
 
+  const excluirProdutoExtra = (produtoId) => {
+    setErro("");
+    setSucesso("");
+
+    if (
+      typeof window !== "undefined" &&
+      !window.confirm("Deseja realmente excluir este produto?")
+    ) {
+      return false;
+    }
+
+    const id = Number(produtoId);
+    const produto = produtos.find((item) => Number(item.id) === id);
+    if (!produto) {
+      return false;
+    }
+
+    setProdutos((state) => state.filter((item) => Number(item.id) !== id));
+    setItens((state) => state.filter((item) => Number(item.produto_id) !== id));
+
+    if (Number(produtoSelecionado) === id) {
+      setProdutoSelecionado("");
+    }
+
+    if (produtoExtraEmEdicaoId === id) {
+      cancelarEdicaoProdutoExtra();
+    }
+
+    setSucesso("Produto removido na sessao atual");
+    return true;
+  };
+
+  const iniciarEdicaoOrcamento = (orcamento) => {
+    setErro("");
+    setSucesso("");
+
+    const itensParaEdicao = [];
+
+    for (const item of orcamento.itens ?? []) {
+      const produtoEncontrado = produtos.find(
+        (produto) => String(produto.nome) === String(item.produto),
+      );
+
+      if (!produtoEncontrado) {
+        setErro(
+          `Nao foi possivel editar. Produto nao encontrado no catalogo: ${item.produto}`,
+        );
+        return false;
+      }
+
+      const quantidade = Number(item.quantidade);
+      const valor = toNumber(produtoEncontrado.valor);
+
+      itensParaEdicao.push({
+        produto_id: produtoEncontrado.id,
+        produto: produtoEncontrado.nome,
+        valor,
+        quantidade,
+        subtotal: quantidade * valor,
+      });
+    }
+
+    setNomeCliente(String(orcamento.nome_cliente ?? ""));
+    setData(isoToBrDate(String(orcamento.data_solicitacao ?? "")));
+    setItens(itensParaEdicao);
+    setProdutoSelecionado("");
+    setQuantidade(1);
+    setKitSelecionado("");
+    setOrcamentoEmEdicaoId(Number(orcamento.id));
+    setSucesso(`Editando orcamento #${orcamento.id}`);
+    return true;
+  };
+
+  const excluirOrcamentoPorId = async (orcamentoId) => {
+    setErro("");
+    setSucesso("");
+
+    if (
+      typeof window !== "undefined" &&
+      !window.confirm("Deseja realmente excluir este orcamento?")
+    ) {
+      return false;
+    }
+
+    try {
+      const id = Number(orcamentoId);
+      const resposta = await excluirOrcamento(id);
+
+      if (orcamentoEmEdicaoId === id) {
+        limparFormulario();
+      }
+
+      setSucesso(resposta.message || "Orcamento excluido com sucesso");
+      await carregarOrcamentos(paginacao.page);
+      return true;
+    } catch (error) {
+      setErro(error.message || "Erro inesperado ao excluir orcamento");
+      return false;
+    }
+  };
+
   const limparFormulario = () => {
     setNomeCliente("");
     setData(initialDate());
@@ -409,6 +542,7 @@ export const useOrcamentoPage = () => {
     setProdutoSelecionado("");
     setQuantidade(1);
     setKitSelecionado("");
+    setOrcamentoEmEdicaoId(null);
   };
 
   const atualizarData = (value) => {
@@ -450,9 +584,17 @@ export const useOrcamentoPage = () => {
         })),
       };
 
-      const resposta = await criarOrcamento(payload);
+      const resposta = orcamentoEmEdicaoId
+        ? await atualizarOrcamento(orcamentoEmEdicaoId, payload)
+        : await criarOrcamento(payload);
+
       limparFormulario();
-      setSucesso(resposta.message || "Orcamento salvo com sucesso");
+      setSucesso(
+        resposta.message ||
+          (orcamentoEmEdicaoId
+            ? "Orcamento atualizado com sucesso"
+            : "Orcamento salvo com sucesso"),
+      );
       await carregarOrcamentos(paginacao.page);
       return true;
     } catch (error) {
@@ -499,5 +641,9 @@ export const useOrcamentoPage = () => {
     iniciarEdicaoProdutoExtra,
     cancelarEdicaoProdutoExtra,
     salvarProdutoExtra,
+    excluirProdutoExtra,
+    orcamentoEmEdicaoId,
+    iniciarEdicaoOrcamento,
+    excluirOrcamentoPorId,
   };
 };

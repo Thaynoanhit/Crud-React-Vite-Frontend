@@ -1,4 +1,5 @@
 import { formatCurrency } from "../utils/currency";
+import { getLinhaInfo } from "../utils/productLine";
 import { ItemTable } from "./ItemTable";
 
 export function OrcamentoForm({
@@ -9,6 +10,7 @@ export function OrcamentoForm({
   total,
   loadingProdutos,
   salvandoOrcamento,
+  orcamentoEmEdicao,
   onFieldChange,
   onSelecionarKit,
   onAdicionarItem,
@@ -29,32 +31,6 @@ export function OrcamentoForm({
     (acc, item) => acc + Number(item.produto.valor) * Number(item.quantidade),
     0,
   );
-
-  const getLinhaInfo = (nomeProduto) => {
-    if (!String(nomeProduto).includes("|")) {
-      return {
-        linha: "Sem linha",
-        nomeExibicao: nomeProduto,
-        linhaClasse: "outros",
-      };
-    }
-
-    const [linhaRaw, nomeRaw] = String(nomeProduto)
-      .split("|")
-      .map((parte) => parte.trim());
-
-    const linhaClasseMap = {
-      Entrada: "entrada",
-      Intermediario: "intermediario",
-      "Alto Desempenho": "alto-desempenho",
-    };
-
-    return {
-      linha: linhaRaw,
-      nomeExibicao: nomeRaw,
-      linhaClasse: linhaClasseMap[linhaRaw] ?? "outros",
-    };
-  };
 
   return (
     <section className="panel">
@@ -187,7 +163,11 @@ export function OrcamentoForm({
           className="btn btn-primary"
           disabled={salvandoOrcamento}
         >
-          {salvandoOrcamento ? "Salvando..." : "Salvar orcamento"}
+          {salvandoOrcamento
+            ? "Salvando..."
+            : orcamentoEmEdicao
+              ? "Salvar alteracoes"
+              : "Salvar orcamento"}
         </button>
       </form>
     </section>

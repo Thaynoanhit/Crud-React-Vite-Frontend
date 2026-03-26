@@ -46,3 +46,21 @@ export const criarOrcamento = async (payload) => {
 
   return body;
 };
+
+export const atualizarOrcamento = async (id, payload) => {
+  const body = await apiRequest(`/orcamentos/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  return body;
+};
+
+export const excluirOrcamento = async (id) => {
+  const body = await apiRequest(`/orcamentos/${id}`, {
+    method: "DELETE",
+  });
+
+  return body;
+};

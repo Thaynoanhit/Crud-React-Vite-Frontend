@@ -5,6 +5,8 @@ export function OrcamentosList({
   orcamentos,
   loadingOrcamentos,
   onAtualizar,
+  onEditarOrcamento,
+  onExcluirOrcamento,
   paginacao,
   onPaginaAnterior,
   onProximaPagina,
@@ -34,7 +36,8 @@ export function OrcamentosList({
         </button>
       </div>
       {loadingOrcamentos ? (
-        <div className="loading-cards">
+        <div className="loading-cards" role="status" aria-live="polite">
+          <span className="visually-hidden">Carregando orcamentos</span>
           <span className="loading-line"></span>
           <span className="loading-line"></span>
           <span className="loading-line"></span>
@@ -46,9 +49,27 @@ export function OrcamentosList({
           ) : (
             orcamentos.map((orcamento) => (
               <li key={orcamento.id}>
-                <strong>{orcamento.nome_cliente}</strong> -{" "}
-                {isoToBrDate(orcamento.data_solicitacao)} -{" "}
-                {formatCurrency(orcamento.total)}
+                <span className="orcamento-info">
+                  <strong>{orcamento.nome_cliente}</strong> -{" "}
+                  {isoToBrDate(orcamento.data_solicitacao)} -{" "}
+                  {formatCurrency(orcamento.total)}
+                </span>
+                <div className="row-actions">
+                  <button
+                    type="button"
+                    className="btn"
+                    onClick={() => onEditarOrcamento(orcamento)}
+                  >
+                    Editar
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-danger"
+                    onClick={() => onExcluirOrcamento(orcamento.id)}
+                  >
+                    Excluir
+                  </button>
+                </div>
               </li>
             ))
           )}

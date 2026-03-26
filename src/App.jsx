@@ -43,6 +43,10 @@ function App() {
     iniciarEdicaoProdutoExtra,
     cancelarEdicaoProdutoExtra,
     salvarProdutoExtra,
+    excluirProdutoExtra,
+    orcamentoEmEdicaoId,
+    iniciarEdicaoOrcamento,
+    excluirOrcamentoPorId,
   } = useOrcamentoPage();
 
   const irParaPaginaAnterior = () => {
@@ -108,6 +112,7 @@ function App() {
           total={total}
           loadingProdutos={loadingProdutos}
           salvandoOrcamento={salvandoOrcamento}
+          orcamentoEmEdicao={orcamentoEmEdicaoId !== null}
           onFieldChange={handleFieldChange}
           onSelecionarKit={setKitSelecionado}
           onAdicionarItem={adicionarItem}
@@ -126,6 +131,7 @@ function App() {
             onValorChange={setValorProdutoExtra}
             onSalvarProduto={salvarProdutoExtra}
             onEditarProduto={iniciarEdicaoProdutoExtra}
+            onExcluirProduto={excluirProdutoExtra}
             onCancelarEdicao={cancelarEdicaoProdutoExtra}
           />
 
@@ -133,6 +139,8 @@ function App() {
             orcamentos={orcamentos}
             loadingOrcamentos={loadingOrcamentos}
             onAtualizar={carregarOrcamentos}
+            onEditarOrcamento={iniciarEdicaoOrcamento}
+            onExcluirOrcamento={excluirOrcamentoPorId}
             paginacao={paginacao}
             onPaginaAnterior={irParaPaginaAnterior}
             onProximaPagina={irParaProximaPagina}

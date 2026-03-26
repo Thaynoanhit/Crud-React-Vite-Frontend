@@ -123,19 +123,29 @@ Frontend em: `http://localhost:5173`
 
 ## 🔒 Validacoes
 
+**Principais:**
+
 - Nome do cliente obrigatorio
 - Data obrigatoria
 - Minimo de 1 item por orcamento
 - Quantidade maior que zero
 - Produto obrigatorio em cada item
 
+**Extras (Implementadas):**
+
+- Previne adicionar o mesmo produto 2x em draft (por produto_id + valor unitario)
+- Previne adicionar o mesmo item em orçamento já salvo (previne duplicatas)
+- Confirmação antes de deletar produto ou orçamento
+
 ## 🧪 Testes
 
-3 testes Vitest + Testing Library (Unit + Integracao):
+**3 testes Vitest + Testing Library** (Unit + Integracao):
 
 - ✅ Calculo de total da regra de negocio (`calculateTotal`)
 - ✅ Fluxo de adicionar/remover item com recalculo em tempo real
 - ✅ Fluxo de salvar orcamento e limpar formulario apos sucesso
+
+**Resultados:** `7 tests passed`
 
 Rodar testes:
 
@@ -191,13 +201,17 @@ Depois reinicie o frontend (`npm run dev`).
 
 ## 📋 Checklist de validacao manual
 
+**Fluxo Principal:**
+
 1. ✅ Confirmar carregamento dos produtos no select.
 2. ✅ Preencher nome do cliente e data.
 3. ✅ Adicionar itens e validar total em tempo real.
 4. ✅ Remover item e validar recalculo do total.
-5. ✅ Salvar orcamento e validar mensagem de sucesso.
-6. ✅ Confirmar limpeza do formulario apos salvar.
-7. ✅ Validar paginacao da lista de orcamentos salvos.
+5. ✅ Tentar adicionar o mesmo produto 2x = bloqueado (validação de duplicatas).
+6. ✅ Salvar orcamento e validar mensagem de sucesso.
+7. ✅ Confirmar limpeza do formulario apos salvar.
+
+**Funcionalidades Extras:** 8. ✅ Validar paginacao da lista de orcamentos salvos. 9. ✅ Clicar em "Editar" de um orcamento = form preenchida com dados. 10. ✅ Clicar em "Excluir" de um orcamento = confirma ao deletar. 11. ✅ Clicar em "Editar" produto = carrega dados no form. 12. ✅ Clicar em "Excluir" produto = confirma ao deletar. 13. ✅ Botões lado a lado (Editar | Excluir).
 
 ## 🧰 Scripts
 

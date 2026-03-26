@@ -1,32 +1,7 @@
 import { formatCurrency } from "../utils/currency";
+import { getLinhaInfo } from "../utils/productLine";
 
 export function ItemTable({ itens, total, onRemoverItem }) {
-  const getLinhaInfo = (nomeProduto) => {
-    if (!String(nomeProduto).includes("|")) {
-      return {
-        linha: "Sem linha",
-        nomeExibicao: nomeProduto,
-        linhaClasse: "outros",
-      };
-    }
-
-    const [linhaRaw, nomeRaw] = String(nomeProduto)
-      .split("|")
-      .map((parte) => parte.trim());
-
-    const linhaClasseMap = {
-      Entrada: "entrada",
-      Intermediario: "intermediario",
-      "Alto Desempenho": "alto-desempenho",
-    };
-
-    return {
-      linha: linhaRaw,
-      nomeExibicao: nomeRaw,
-      linhaClasse: linhaClasseMap[linhaRaw] ?? "outros",
-    };
-  };
-
   return (
     <div className="itens-wrapper">
       <table>

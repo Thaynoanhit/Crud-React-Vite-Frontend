@@ -9,7 +9,9 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "../../src/App";
 import {
+  atualizarOrcamento,
   criarOrcamento,
+  excluirOrcamento,
   listarOrcamentos,
   listarProdutos,
 } from "../../src/services/orcamentoService";
@@ -18,6 +20,8 @@ vi.mock("../../src/services/orcamentoService", () => ({
   listarProdutos: vi.fn(),
   listarOrcamentos: vi.fn(),
   criarOrcamento: vi.fn(),
+  atualizarOrcamento: vi.fn(),
+  excluirOrcamento: vi.fn(),
 }));
 
 beforeEach(() => {
@@ -41,6 +45,14 @@ beforeEach(() => {
   criarOrcamento.mockResolvedValue({
     message: "Orcamento criado com sucesso",
   });
+
+  atualizarOrcamento.mockResolvedValue({
+    message: "Orcamento atualizado com sucesso",
+  });
+
+  excluirOrcamento.mockResolvedValue({
+    message: "Orcamento excluido com sucesso",
+  });
 });
 
 afterEach(() => {
@@ -48,6 +60,30 @@ afterEach(() => {
 });
 
 describe("fluxo do formulario de orcamento", () => {
+  it("deve impedir cadastro de produto com mesmo nome e valor", async () => {
+    render(<App />);
+
+    await waitFor(() => {
+      expect(listarProdutos).toHaveBeenCalledTimes(1);
+    });
+
+    const nomeProdutoInput = screen.getByLabelText("Nome do produto");
+    const valorProdutoInput = screen.getByLabelText("Valor do produto");
+
+    fireEvent.change(nomeProdutoInput, {
+      target: { value: "Mouse" },
+    });
+    fireEvent.change(valorProdutoInput, {
+      target: { value: "10" },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Adicionar produto" }));
+
+    expect(
+      screen.getByText("Ja existe um produto com o mesmo nome e valor"),
+    ).toBeInTheDocument();
+  });
+
   it("deve adicionar e remover item com recalculo de total", async () => {
     render(<App />);
 
