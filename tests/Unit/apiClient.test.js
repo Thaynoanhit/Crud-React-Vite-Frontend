@@ -7,7 +7,7 @@ describe("apiRequest", () => {
   });
 
   it("retorna erro amigavel quando resposta de sucesso nao e JSON", async () => {
-    vi.spyOn(global, "fetch").mockResolvedValue({
+    vi.spyOn(globalThis, "fetch").mockResolvedValue({
       ok: true,
       status: 200,
       text: async () => "<html>ok</html>",
@@ -19,7 +19,7 @@ describe("apiRequest", () => {
   });
 
   it("retorna erro com status quando resposta de erro nao e JSON", async () => {
-    vi.spyOn(global, "fetch").mockResolvedValue({
+    vi.spyOn(globalThis, "fetch").mockResolvedValue({
       ok: false,
       status: 502,
       text: async () => "bad gateway",
@@ -31,7 +31,7 @@ describe("apiRequest", () => {
   });
 
   it("retorna payload quando envelope da API e valido", async () => {
-    vi.spyOn(global, "fetch").mockResolvedValue({
+    vi.spyOn(globalThis, "fetch").mockResolvedValue({
       ok: true,
       status: 200,
       text: async () =>
