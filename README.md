@@ -1,7 +1,7 @@
 # 📊 Sistema de Gestao de Orcamentos - Frontend
 
 Aplicacao React + Vite para gerenciamento de orcamentos com calculo em tempo real,
-integrada a API REST em PHP do projeto.
+integrada ao backend (Backend API REST em PHP) do projeto.
 
 ## 📦 O que faz
 
@@ -43,7 +43,7 @@ components -> hooks -> services -> API
 
 - `components`: renderizacao de formulario, lista, tabela e feedback
 - `hooks`: estado e regras da pagina (`useOrcamentoPage`)
-- `services`: comunicacao HTTP com backend
+- `services`: comunicacao HTTP com o backend (Backend API)
 - `utils`: formatacao e regras puras (datas, moeda, total)
 
 ## ⚙️ Pre-requisitos
@@ -55,7 +55,7 @@ components -> hooks -> services -> API
 
 ### Opcao rapida (recomendado)
 
-No diretorio `../BACKEND_PHP` (API):
+No diretorio `../BACKEND_PHP` (Backend API):
 
 ```bash
 docker compose up -d
@@ -77,7 +77,7 @@ Esse fluxo:
 
 ### Opcao manual
 
-No diretorio `../BACKEND_PHP` (API):
+No diretorio `../BACKEND_PHP` (Backend API):
 
 ```bash
 docker compose up -d
@@ -105,7 +105,7 @@ docker compose exec php vendor/bin/phinx migrate
 docker compose exec php vendor/bin/phinx seed:run
 ```
 
-API em: `http://localhost:8000`
+Backend API em: `http://localhost:8000`
 
 Depois, no frontend:
 
@@ -116,10 +116,27 @@ npm run dev
 
 Frontend em: `http://localhost:5173`
 
+## 🤖 CI (GitHub Actions)
+
+Este repositorio possui pipeline em `.github/workflows/ci.yml`.
+
+Execucao automatica em:
+
+- `push` para `main`, `develop` e `master`
+- `pull_request`
+
+Etapas do pipeline:
+
+- setup de Node 20
+- instalacao de dependencias com `npm ci`
+- lint (`npm run lint`)
+- testes (`npm run test`)
+- build (`npm run build`)
+
 ## 🌐 Enderecos locais
 
 - 🖥️ Frontend: `http://localhost:5173`
-- 🔗 API backend: `http://localhost:8000`
+- 🔗 Backend API: `http://localhost:8000`
 
 ## 🔒 Validacoes
 
@@ -176,7 +193,7 @@ O build usa imagem Chainguard Node e o runtime usa Chainguard Nginx, ambos fixad
 
 Essa abordagem reduz variacao de ambiente e melhora rastreabilidade de seguranca durante a avaliacao tecnica.
 
-## 🔌 Integracao com backend
+## 🔌 Integracao com Backend API
 
 ### Opcao A (producao em Docker): Proxy do Nginx
 
@@ -211,7 +228,14 @@ Depois reinicie o frontend (`npm run dev`).
 6. ✅ Salvar orcamento e validar mensagem de sucesso.
 7. ✅ Confirmar limpeza do formulario apos salvar.
 
-**Funcionalidades Extras:** 8. ✅ Validar paginacao da lista de orcamentos salvos. 9. ✅ Clicar em "Editar" de um orcamento = form preenchida com dados. 10. ✅ Clicar em "Excluir" de um orcamento = confirma ao deletar. 11. ✅ Clicar em "Editar" produto = carrega dados no form. 12. ✅ Clicar em "Excluir" produto = confirma ao deletar. 13. ✅ Botões lado a lado (Editar | Excluir).
+**Funcionalidades Extras:**
+
+8. ✅ Validar paginacao da lista de orcamentos salvos.
+9. ✅ Clicar em "Editar" de um orcamento = form preenchida com dados.
+10. ✅ Clicar em "Excluir" de um orcamento = confirma ao deletar.
+11. ✅ Clicar em "Editar" produto = carrega dados no form.
+12. ✅ Clicar em "Excluir" produto = confirma ao deletar.
+13. ✅ Botoes lado a lado (Editar | Excluir).
 
 ## 🧰 Scripts
 
@@ -224,7 +248,7 @@ npm run build
 
 ## 🛠️ Troubleshooting
 
-API nao responde?
+Backend API nao responde?
 
 ```bash
 cd ../BACKEND_PHP
@@ -232,12 +256,19 @@ docker compose up -d
 docker compose logs -f php
 ```
 
+Se o servico `php` do backend (Backend API) nao iniciar no Docker/Whaler e aparecer `address already in use`, veja a secao de troubleshooting do `BACKEND_PHP/README.md` para liberar a porta `8000` ou trocar o mapeamento de porta.
+
 Frontend nao refletiu variaveis de ambiente novas?
 
 ```bash
 # pare e suba novamente
 npm run dev
 ```
+
+Lint acusando erro em arquivo gerado?
+
+- O projeto ignora `dist` e `.vite-cache` no ESLint.
+- Se necessario, limpe cache local e rode novamente: `rm -rf .vite-cache && npm run lint`.
 
 ## 🔒 Manutencao dos digests Docker
 
