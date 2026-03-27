@@ -1,4 +1,4 @@
-import { formatCurrency } from "../utils/currency";
+import { formatCurrency, roundMoney, toNumber } from "../utils/currency";
 import { getLinhaInfo } from "../utils/productLine";
 import { ItemTable } from "./ItemTable";
 
@@ -28,7 +28,10 @@ export function OrcamentoForm({
   );
 
   const totalEstimadoKit = (kitSelecionadoDetalhes?.itens ?? []).reduce(
-    (acc, item) => acc + Number(item.produto.valor) * Number(item.quantidade),
+    (acc, item) =>
+      roundMoney(
+        acc + toNumber(item.produto.valor) * toNumber(item.quantidade),
+      ),
     0,
   );
 
@@ -128,8 +131,9 @@ export function OrcamentoForm({
             <strong>Resumo do {kitSelecionadoDetalhes.nome}</strong>
             <ul className="kit-preview-lista">
               {kitSelecionadoDetalhes.itens.map((item) => {
-                const subtotal =
-                  Number(item.produto.valor) * Number(item.quantidade);
+                const subtotal = roundMoney(
+                  toNumber(item.produto.valor) * toNumber(item.quantidade),
+                );
                 const linhaInfo = getLinhaInfo(item.produto.nome);
 
                 return (

@@ -134,7 +134,7 @@ Frontend em: `http://localhost:5173`
 **Extras (Implementadas):**
 
 - Previne adicionar o mesmo produto 2x em draft (por produto_id + valor unitario)
-- Previne adicionar o mesmo item em orçamento já salvo (previne duplicatas)
+- Previne adicionar o mesmo item no rascunho atual (previne duplicatas no draft)
 - Confirmação antes de deletar produto ou orçamento
 
 ## 🧪 Testes

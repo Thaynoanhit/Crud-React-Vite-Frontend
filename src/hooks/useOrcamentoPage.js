@@ -6,7 +6,7 @@ import {
   listarOrcamentos,
   listarProdutos,
 } from "../services/orcamentoService";
-import { toNumber } from "../utils/currency";
+import { roundMoney, toNumber } from "../utils/currency";
 import {
   brToApiDate,
   getTodayBrDate,
@@ -260,7 +260,7 @@ export const useOrcamentoPage = () => {
       return;
     }
 
-    const subtotal = quantidadeNumerica * toNumber(produto.valor);
+    const subtotal = roundMoney(quantidadeNumerica * toNumber(produto.valor));
     setItens((state) => [
       ...state,
       {
@@ -297,7 +297,7 @@ export const useOrcamentoPage = () => {
       const nextState = [...state];
 
       for (const itemKit of kit.itens) {
-        const valor = toNumber(itemKit.produto.valor);
+        const valor = roundMoney(toNumber(itemKit.produto.valor));
         const indexExistente = nextState.findIndex(
           (itemAtual) => itemAtual.produto_id === itemKit.produto.id,
         );
@@ -308,7 +308,7 @@ export const useOrcamentoPage = () => {
             produto: itemKit.produto.nome,
             valor,
             quantidade: itemKit.quantidade,
-            subtotal: itemKit.quantidade * valor,
+            subtotal: roundMoney(itemKit.quantidade * valor),
           });
           continue;
         }
@@ -319,7 +319,7 @@ export const useOrcamentoPage = () => {
         nextState[indexExistente] = {
           ...itemExistente,
           quantidade: novaQuantidade,
-          subtotal: novaQuantidade * itemExistente.valor,
+          subtotal: roundMoney(novaQuantidade * itemExistente.valor),
         };
       }
 
@@ -351,8 +351,8 @@ export const useOrcamentoPage = () => {
     setSucesso("");
 
     const nomeNormalizado = nomeProdutoExtra.trim();
-    const valorNormalizado = Number(
-      String(valorProdutoExtra).replace(".", "").replace(",", "."),
+    const valorNormalizado = roundMoney(
+      Number(String(valorProdutoExtra).replace(".", "").replace(",", ".")),
     );
 
     if (!nomeNormalizado) {
@@ -423,7 +423,7 @@ export const useOrcamentoPage = () => {
               ...item,
               produto: nomeNormalizado,
               valor: valorNormalizado,
-              subtotal: valorNormalizado * item.quantidade,
+              subtotal: roundMoney(valorNormalizado * item.quantidade),
             }
           : item,
       ),
@@ -485,14 +485,14 @@ export const useOrcamentoPage = () => {
       }
 
       const quantidade = Number(item.quantidade);
-      const valor = toNumber(produtoEncontrado.valor);
+      const valor = roundMoney(toNumber(produtoEncontrado.valor));
 
       itensParaEdicao.push({
         produto_id: produtoEncontrado.id,
         produto: produtoEncontrado.nome,
         valor,
         quantidade,
-        subtotal: quantidade * valor,
+        subtotal: roundMoney(quantidade * valor),
       });
     }
 

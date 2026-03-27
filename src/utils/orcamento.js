@@ -1,2 +1,4 @@
+import { roundMoney, toNumber } from "./currency";
+
 export const calculateTotal = (itens = []) =>
-  itens.reduce((acc, item) => acc + item.subtotal, 0)
+  roundMoney(itens.reduce((acc, item) => acc + toNumber(item.subtotal), 0));
